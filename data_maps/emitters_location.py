@@ -24,7 +24,7 @@ sector_totals = data_points.groupby("Activity")["Emission (ton/year)"].sum()
 print("SECTOR TOTAL IS:",sector_totals)
 
 # Define scaling for large circles
-circle_scale = sector_totals.max() /7000  # Adjust for proportional scaling
+circle_scale = sector_totals.max() /8000  # Adjust for proportional scaling
 
 # Define the desired order for sectors
 sector_order = [
@@ -101,12 +101,12 @@ ax_legend = fig.add_subplot(gs[0, 1])
 ax_legend.axis("off")  # Turn off axis for the legend
 
 # Plot the aggregated emission circles
-x_pos = 0.5  # Fixed horizontal position for circles
+x_pos = 0.3  # Fixed horizontal position for circles
 # Set y-axis limits to clip circles within bounds
 ax_legend.set_xlim(0, 1)  # Ensure horizontal centering
 y_min=0.15
 y_max=0.85
-y_positions = [0.8,0.63,0.48,0.37]
+y_positions = [0.8,0.6,0.44,0.32]
 
 ax_legend.set_ylim(y_min - 0.1, y_max + 0.1)  # Add padding for circle clipping
 
