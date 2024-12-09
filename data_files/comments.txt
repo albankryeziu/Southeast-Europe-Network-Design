@@ -1,0 +1,16 @@
+Comments regarding the mathematical model in our former approach:
+
+First, in the solutions presented we only have been looking to create an arc between emitters into sorage, and  utilization sites.
+Secondly, this model does not take into account that two emitters can be very close, and instead of building a pipeline that goes from emitter 1 to emitter 2 and together to the storage, the model will suggest, we build two different pipelines.
+  Say the emitters were in a tringular position between each other, and then we would have a huge cost to pay for such model. 
+
+Next, if we were to considder the emitters and all utilizers as recieverers as well, then the problem becomes too big with having over 5900 decision variables. Gurobi can only handle 2000 on a free academic license 
+I propose to tweak the approach for the whole countries by doing a "neighbohood search" first, and then solve the problem in terms of.
+
+  Emitter 1 will search for the closest storage site, and if that does not have the capacity to have all the emissions, then we outsorce the CO2 into other sources. 
+  When solving the entire countries scenario, we must consider/assume that a country will only take CO2 to store, if they have capacity, and we include a different price for storing it (now the storage is consider more of a utilization point)
+
+So, first solve the whole countries one by one, 
+save the numbers on the amount of CO2 that is "leaking"
+Include that CO2 into the trading market internationally, and make one or two trading points for them. 
+
