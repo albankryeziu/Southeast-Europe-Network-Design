@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Dec 11 14:48:02 2024
+
+@author: P304937
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import gurobipy as gb
@@ -33,15 +40,17 @@ data_utilizers=pd.read_excel(file_path, "utilization_sites")
 data_storage=pd.read_excel(file_path, "storage_sites")
 
 data_emitters=data_emitters[["ID", "LAT","LON"]].copy()
-data_utilizers=data_emitters[["ID", "LAT","LON"]].copy()
-data_storage=data_emitters[["ID", "LAT","LON"]].copy()
+data_utilizers=data_utilizers[["ID", "LAT","LON"]].copy()
+data_storage=data_storage[["ID", "LAT","LON"]].copy()
 
 data_emitters["SourceFile"]="emitters"
 data_utilizers["SourceFile"]="utilizers"
 data_storage["SourceFile"]="storage"
 #print(data_storage.columns)
 
-combined_df=pd.concat([data_emitters, data_utilizers],ignore_index=True)
+combined_df=pd.concat([data_emitters, data_utilizers,data_storage],ignore_index=True)
+print(combined_df)
+combined_df=pd.concat([data_emitters, data_utilizers,data_storage],ignore_index=True)
 #print(combined_df)
     
 
@@ -72,7 +81,7 @@ node_pairs["Distance (km)"] = node_pairs.apply(
 )
 
 # Filter out self-distances (optional)
-#node_pairs = node_pairs[node_pairs["Index1"] != node_pairs["Index2"]]
+node_pairs = node_pairs[node_pairs["Index1"] != node_pairs["Index2"]]
 
 # Select relevant columns
 result_df = node_pairs[["Node1", "SourceFile1", "Node2", "SourceFile2", "Distance (km)"]]
@@ -82,9 +91,38 @@ result_df.to_excel("distances_between_all_points.xlsx", index=False)
 print(result_df)
 print("Distances saved to distances_between_all_points.xlsx")    
     
+
+
+
+#print(result_df)
+print("Distances saved to distances_between_all_points.xlsx")    
     
-    
-    
-    
-    
-    
+print(data_emitters.duplicated().sum(), "duplicate rows in emitters")
+print(data_utilizers.duplicated().sum(), "duplicate rows in utilizers")
+print(data_storage.duplicated().sum(), "duplicate rows in storage")
+
+# Create arcs based on rules
+arcs = []
+
+for _, row in node_pairs.iterrows():
+    if row["SourceFile1"] == "emitters":  # Source node
+        if row["SourceFile2"] == "emitters" and row["Node1"] != row["Node2"]:
+            # Source to Source
+            arcs.append((row["Node1"], row["Node2"], row["Distance (km)"]))
+        elif row["SourceFile2"] in ["utilizers", "storage"]:
+            # Source to Sink
+            arcs.append((row["Node1"], row["Node2"], row["Distance (km)"]))
+    # No connections from sinks to sources or sinks
+    # (This part is excluded by default as we skip these combinations)
+
+# Convert arcs to a DataFrame for easier manipulation and counting
+arcs_df = pd.DataFrame(arcs, columns=["From", "To", "Distance (km)"])
+print(arcs_df.groupby(["From", "To"]).size())
+
+
+# Save the arcs to Excel
+arcs_df.to_excel("valid_arcs.xlsx", index=False)
+#print(f"Valid arcs saved to valid_arcs.xlsx")
+
+# Print total number of valid arcs
+print("Total number of valid arcs:",arcs_df.groupby(["From", "To"]).size())
