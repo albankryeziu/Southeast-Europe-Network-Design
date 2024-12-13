@@ -119,10 +119,44 @@ for _, row in node_pairs.iterrows():
 arcs_df = pd.DataFrame(arcs, columns=["From", "To", "Distance (km)"])
 print(arcs_df.groupby(["From", "To"]).size())
 
+#add transportation costs to the sheet
+tanker_cost_per_km=0.05
+arcs_df["Tanker_Cost"]=arcs_df["Distance (km)"]*tanker_cost_per_km
+#Define pipeline cost table (values are from the provided table)
+# Updated pipeline costs (per km/year and capacity in Mt/year)
+pipeline_costs_updated = {
+    4: {"CAPEX_per_km": 28000, "O&M_per_km": 980, "Capacity": 0.29},
+    6: {"CAPEX_per_km": 29100, "O&M_per_km": 1019, "Capacity": 0.66},
+    8: {"CAPEX_per_km": 34000, "O&M_per_km": 1190, "Capacity": 1.39},
+    10: {"CAPEX_per_km": 36500, "O&M_per_km": 1278, "Capacity": 2.10},
+    12: {"CAPEX_per_km": 39600, "O&M_per_km": 1386, "Capacity": 2.37},
+    16: {"CAPEX_per_km": 46400, "O&M_per_km": 1624, "Capacity": 4.93},
+    20: {"CAPEX_per_km": 52000, "O&M_per_km": 1820, "Capacity": 7.30},
+}
+
+# Function to calculate fixed costs per pipeline diameter
+def calculate_pipeline_fixed_cost(distance, diameter):
+    """
+    Calculate fixed costs (CAPEX + O&M) for a given pipeline diameter and distance.
+    """
+    cost_info = pipeline_costs_updated[diameter]
+    
+    # Fixed costs (per year)
+    capex_cost = distance * cost_info["CAPEX_per_km"]
+    o_and_m_cost = distance * cost_info["O&M_per_km"]
+    total_fixed_cost = capex_cost + o_and_m_cost
+    
+    return total_fixed_cost
+
+# Add fixed cost columns to the arcs DataFrame
+for diameter in pipeline_costs_updated.keys():
+    arcs_df[f"Pipeline_Fixed_Cost_{diameter}"] = arcs_df["Distance (km)"].apply(
+        lambda dist: calculate_pipeline_fixed_cost(dist, diameter)
+    )
+
 
 # Save the arcs to Excel
 arcs_df.to_excel("valid_arcs.xlsx", index=False)
 #print(f"Valid arcs saved to valid_arcs.xlsx")
 
-# Print total number of valid arcs
 print("Total number of valid arcs:",arcs_df.groupby(["From", "To"]).size())
