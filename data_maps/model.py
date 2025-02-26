@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# ------------------- Step 1: Filter Out Zero-Flow Arcs -------------------
+# filter out the zero-arcs
 def filter_results(results_df):
     return results_df[
         (results_df["Flow_Pipeline_4"] > 0) |
@@ -19,7 +19,7 @@ def filter_results(results_df):
     )
 
 
-# ------------------- Step 2: Compute Key Statistics -------------------
+# summary of the results
 def compute_summary(results_df, capture_results_df):
     total_CO2_transport = results_df[
         ["Flow_Pipeline_4", "Flow_Pipeline_6", "Flow_Pipeline_8", "Flow_Pipeline_16", "Flow_Truck"]
@@ -42,7 +42,7 @@ def generate_latex_table(summary_results):
     pass
 
 
-# ------------------- Step 4: Visualize Data -------------------
+#vizualize the data
 def plot_results(total_CO2_transport, num_pipelines_built, num_truck_routes):
     plt.figure(figsize=(8, 5))
     total_CO2_transport.plot(kind="bar", title="CO₂ Transported by Mode", ylabel="Tons", xlabel="Transport Mode")
@@ -57,16 +57,16 @@ def plot_results(total_CO2_transport, num_pipelines_built, num_truck_routes):
     plt.show()
 
 
-# ------------------- Step 5: Process Results & Save -------------------
+# Process and save the results
 def process_results(results_df, capture_results_df, max_truck_data):
-    # Step 1: Filter results
+    # filter results
     filtered_results_df = filter_results(results_df)
 
-    # Step 2: Compute key statistics
+    # compute summary
     total_CO2_transport, num_pipelines_built, num_truck_routes = compute_summary(filtered_results_df,
                                                                                  capture_results_df)
 
-    # Step 3: Generate summary per country
+    # summary per country
     summary_results = []
     for country in max_truck_data.keys():
         if country == "Total":
@@ -100,12 +100,12 @@ def process_results(results_df, capture_results_df, max_truck_data):
 
     summary_df = pd.DataFrame(summary_results)
 
-    # Step 4: Save filtered results
+    # Save filtered results
     with pd.ExcelWriter("filtered_model_results.xlsx") as writer:
         filtered_results_df.to_excel(writer, sheet_name="Transport Results", index=False)
         capture_results_df.to_excel(writer, sheet_name="Capture Results", index=False)
 
-    # # Step 5: Save LaTeX table
+    # Save LaTeX table
     # latex_table = generate_latex_table(summary_df)
     # with open("ccus_results_table.tex", "w") as f:
     #     f.write(latex_table)
@@ -409,7 +409,7 @@ for util_node in data_utilizers["ID"]:
 intermediate_nodes = list(set(nodes) - set(emitters_data) - set(storage_data) - set(data_utilizers["ID"]))
 
 total_possible_capture = sum(data_emitters["Upper_Bound"])
-Q =  total_possible_capture  # Capture at least 60% of emissions
+Q =  0.6*total_possible_capture  # Capture at least 60% of emissions
 
 
 # CO2 reduction target constraint
@@ -527,5 +527,6 @@ else:
     print(f"Total Storage Capacity: {total_storage_capacity}")
     print(f"Total Utilization Capacity: {total_utilization_capacity}")
     print(f"CO₂ Reduction Target: {Q}")
+
 
 
